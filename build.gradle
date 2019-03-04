@@ -1,3 +1,4 @@
+
 apply plugin: 'maven'
 apply plugin: 'idea'
 apply plugin: 'java'
@@ -20,6 +21,7 @@ repositories {
 	maven { url 'https://dl.bintray.com/ethereum/maven/' }
     mavenCentral()
 }
+
 
 def spring_version="4.3.18.RELEASE"
 
@@ -77,7 +79,7 @@ dependencies {
 
 archivesBaseName = 'web3sdk'
 group = 'org.fisco-bcos'
-version = '2.0.1'
+version = '2.0.2'
 
 // for old sdk
 sourceSets {
@@ -102,9 +104,10 @@ jar {
 	exclude '**/*.key'
 
 	doLast {
+	
 		copy {
-			from file('tools/start.sh')
-			into 'dist/'
+			from file('tools/sol2java.sh')
+			into 'dist/tools/'
 		}
 		copy {
 			from configurations.runtime
@@ -115,11 +118,8 @@ jar {
 			into 'dist/conf'
 		}
 		copy {
-			from file('src/test/resources/contract/Ok.sol')
-			from file('src/test/resources/contract/HelloWorld.sol')
 			from file('src/test/resources/contract/Table.sol')
-			from file('src/test/resources/contract/TableTest.sol')
-			into 'dist/solidity/contracts'
+			into 'dist/tools/contracts'
 		}
 	}
 }
