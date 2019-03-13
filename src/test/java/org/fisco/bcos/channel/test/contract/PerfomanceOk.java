@@ -117,7 +117,7 @@ public class PerfomanceOk {
                   }
                 } catch (Exception e) {
                   TransactionReceipt receipt = new TransactionReceipt();
-                  receipt.setStatus("Error sending!");
+                  receipt.setStatus("-1");
 
                   callback.onResponse(receipt);
                   logger.info(e.getMessage());

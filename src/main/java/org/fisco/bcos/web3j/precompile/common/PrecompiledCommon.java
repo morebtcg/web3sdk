@@ -1,10 +1,13 @@
 package org.fisco.bcos.web3j.precompile.common;
 
+import java.math.BigInteger;
+
+import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigInteger;
-import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
-import org.fisco.bcos.web3j.solidity.Abi;
 
 public class PrecompiledCommon {
 
@@ -14,48 +17,62 @@ public class PrecompiledCommon {
   public static final String SYSCONSENSUS = "_sys_consensus_";
   public static final String SYSCNS = "_sys_cns_";
   public static final String SYSCONFIG = "_sys_config_";
+  
+  public static final int Success = 0;
+  public static final int PermissionDenied = 50000;
+  public static final int TableNameAndAddressExist = 51000;
+  public static final int TableNameAndAddressNotExist = 51001;
+  public static final int InvalidNodeId = 51100;
+  public static final int LastSealer = 51101;
+  public static final int P2pNetwork = 51102;
+  public static final int GroupPeers = 51103;
+  public static final int SealerList = 51104;
+  public static final int ObserverList = 51105;
+  public static final int ContractNameAndVersionExist = 51200;
+  public static final int VersionExceeds = 51201;
+  public static final int InvalidKey = 51300;
 
   public static String transferToJson(int code) throws JsonProcessingException {
     String msg = "";
     switch (code) {
-      case 0:
+      case Success:
         msg = "success";
         break;
-      case 50000:
+      case PermissionDenied:
         msg = "permission denied";
         break;
-      case 51000:
-        msg = "table name and address exist";
+      case TableNameAndAddressExist:
+        msg = "table name and address already exist";
         break;
-      case 51001:
+      case TableNameAndAddressNotExist:
         msg = "table name and address does not exist";
         break;
-      case 51100:
-        msg = "invalid nodeId";
+      case InvalidNodeId:
+        msg = "invalid node ID";
         break;
-      case 51101:
+      case LastSealer:
         msg = "the last sealer cannot be removed";
         break;
-      case 51102:
-        msg = "the node is not in p2p network";
+      case P2pNetwork:
+        msg = "the node is not reachable";
         break;
-      case 51103:
-        msg = "the node is not in group peers";
+      case GroupPeers:
+        msg = "the node is not a group peer";
         break;
-      case 51104:
-        msg = "the node is already in sealer list";
+      case SealerList:
+        msg = "the node is already in the sealer list";
         break;
-      case 51105:
-        msg = "the node is already in observer list";
+      case ObserverList:
+        msg = "the node is already in the observer list";
         break;
-      case 51200:
-        msg = "contract name and version exist";
+      case ContractNameAndVersionExist:
+        msg = "contract name and version already exist";
         break;
-      case 51201:
-        msg = "version exceeds maximum(40) length";
+      case VersionExceeds:
+        msg = "version string length exceeds the maximum limit";
         break;
-      case 51300:
-        msg = "invalid configuration key";
+      case InvalidKey:
+        msg = "invalid configuration entry";
         break;
     }
     ObjectMapper mapper = ObjectMapperFactory.getObjectMapper();
@@ -68,31 +85,50 @@ public class PrecompiledCommon {
       code = new BigInteger(output.substring(2, output.length()), 16).intValue();
       if(code == 1)
       {
-    	  code = 0;
+    	  code = Success;
       }
       if(code == 56)
       {
-    	  code = 51000;
+    	  code = TableNameAndAddressExist;
       }
       if(code == 57)
       {
-    	  code = 51001;
+    	  code = TableNameAndAddressNotExist;
       }
       if(code == 80)
       {
-    	  code = 50000;
+    	  code = PermissionDenied;
       }
       if(code == 100)
       {
-    	  code = 51300;
+    	  code = InvalidKey;
       }
       if(code == 157)
       {
-    	  code = 51101;
+    	  code = LastSealer;
       }
       return transferToJson(code);
     } catch (NumberFormatException e) {
       return "The call function does not exist.";
     }
   }
+  
+	public static String handleTransactionReceipt(TransactionReceipt receipt)
+			throws TransactionException, JsonProcessingException {
+		if("Receipt timeout".equals(receipt.getStatus()))
+    {
+    	throw new TransactionException("Transaction receipt timeout.");
+    }
+    else 
+    {
+    	if(receipt.getOutput() != null)
+    	{
+    		return PrecompiledCommon.getJsonStr(receipt.getOutput());
+    	}
+    	else 
+    	{
+    		throw new TransactionException("Transaction is handled failure.");
+			}
+    }
+	}
 }

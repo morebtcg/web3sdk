@@ -1,15 +1,17 @@
 package org.fisco.bcos.web3j.precompile.consensus;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class ConsensusService {
   private static BigInteger gasPrice = new BigInteger("300000000");
@@ -26,32 +28,32 @@ public class ConsensusService {
 
   public String addSealer(String nodeID) throws Exception {
     if (!isValidNodeID(nodeID)) {
-      return PrecompiledCommon.transferToJson(51102);
+      return PrecompiledCommon.transferToJson(PrecompiledCommon.P2pNetwork);
     }
     List<String> sealerList = web3j.getSealerList().send().getResult();
     if (sealerList.contains(nodeID)) {
-      return PrecompiledCommon.transferToJson(51104);
+      return PrecompiledCommon.transferToJson(PrecompiledCommon.SealerList);
     }
     TransactionReceipt receipt = consensus.addSealer(nodeID).send();
-    return PrecompiledCommon.getJsonStr(receipt.getOutput());
+    return PrecompiledCommon.handleTransactionReceipt(receipt);
   }
 
   public String addObserver(String nodeID) throws Exception {
     if (!isValidNodeID(nodeID)) {
-      return PrecompiledCommon.transferToJson(51102);
+      return PrecompiledCommon.transferToJson(PrecompiledCommon.P2pNetwork);
     }
     List<String> observerList = web3j.getObserverList().send().getResult();
     if (observerList.contains(nodeID)) {
-      return PrecompiledCommon.transferToJson(51105);
+      return PrecompiledCommon.transferToJson(PrecompiledCommon.ObserverList);
     }
     TransactionReceipt receipt = consensus.addObserver(nodeID).send();
-    return PrecompiledCommon.getJsonStr(receipt.getOutput());
+    return PrecompiledCommon.handleTransactionReceipt(receipt);
   }
 
   public String removeNode(String nodeId) throws Exception {
     List<String> groupPeers = web3j.getGroupPeers().send().getResult();
     if (!groupPeers.contains(nodeId)) {
-      return PrecompiledCommon.transferToJson(51103);
+      return PrecompiledCommon.transferToJson(PrecompiledCommon.GroupPeers);
     }
     TransactionReceipt receipt = new TransactionReceipt();
     try {
@@ -67,7 +69,7 @@ public class ConsensusService {
         throw e;
       }
     }
-    return PrecompiledCommon.getJsonStr(receipt.getOutput());
+    return PrecompiledCommon.handleTransactionReceipt(receipt);
   }
 
   private boolean isValidNodeID(String _nodeID) throws IOException, JsonProcessingException {
