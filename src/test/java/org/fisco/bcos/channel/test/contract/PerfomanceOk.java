@@ -2,6 +2,8 @@ package org.fisco.bcos.channel.test.contract;
 
 import com.google.common.util.concurrent.RateLimiter;
 import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,6 +26,12 @@ public class PerfomanceOk {
   public static void main(String[] args) throws Exception {
     try {
       String groupId = args[3];
+      Boolean randomArg = false;
+      if(args.length > 4) {
+        if(args[4].equals("rand")) {
+          randomArg = true;
+        }
+      }
       ApplicationContext context =
           new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
       Service service = context.getBean(Service.class);
@@ -63,7 +71,7 @@ public class PerfomanceOk {
           qps = Integer.parseInt(args[2]);
           break;
         default:
-          System.out.println("Args: <trans> <Total> <QPS>");
+          System.out.println("Args: <trans> <Total> <QPS> <group> <random>");
       }
 
       ThreadPoolTaskExecutor threadPool = new ThreadPoolTaskExecutor();
@@ -78,22 +86,35 @@ public class PerfomanceOk {
 
       PerfomanceCollector collector = new PerfomanceCollector();
       collector.setTotal(count);
+      collector.setOk(ok);
 
       RateLimiter limiter = RateLimiter.create(qps);
       Integer area = count / 10;
       final Integer total = count;
+      final Boolean isRandom = randomArg; 
 
       System.out.println("Start test，total：" + count);
       for (Integer i = 0; i < count; ++i) {
         threadPool.execute(
             new Runnable() {
+              //private Boolean random = randomArg;
+              
               @Override
               public void run() {
                 limiter.acquire();
                 PerfomanceOkCallback callback = new PerfomanceOkCallback();
                 callback.setCollector(collector);
+                
                 try {
-                  ok.trans(new BigInteger("4"), callback);
+                  if(isRandom) {
+                    Random random = new SecureRandom();
+                    Integer index = random.nextInt(1000);
+                    collector.addTo(index);
+                    ok.trans(new BigInteger(String.valueOf(index)), callback);
+                  }
+                  else {
+                    ok.trans(new BigInteger("4"), callback);
+                  }
                 } catch (Exception e) {
                   TransactionReceipt receipt = new TransactionReceipt();
                   receipt.setStatus("Error sending!");

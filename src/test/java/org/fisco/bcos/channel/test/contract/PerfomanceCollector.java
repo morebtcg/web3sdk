@@ -16,6 +16,14 @@ public class PerfomanceCollector {
   public void setTotal(Integer total) {
     this.total = total;
   }
+  
+  public void addTo(Integer num) {
+    this.to.addAndGet(num);
+  }
+  
+  public void setOk(Ok ok) {
+    this.ok = ok;
+  }
 
   public void onMessage(TransactionReceipt receipt, Long cost) {
     try {
@@ -121,6 +129,11 @@ public class PerfomanceCollector {
                 + String.valueOf((double) timeout2000.get() / total * 100)
                 + "%");
 
+        if(to.get() > 0) {
+          System.out.println("To balance expect: " + to.get());
+          System.out.println("To balance in contract: " + ok.get().send().intValue());
+        }
+        
         System.exit(0);
       }
     } catch (Exception e) {
@@ -140,5 +153,7 @@ public class PerfomanceCollector {
   private Integer total = 0;
   private AtomicInteger received = new AtomicInteger(0);
   private AtomicInteger error = new AtomicInteger(0);
+  private AtomicInteger to = new AtomicInteger(0);
   private Long startTimestamp = System.currentTimeMillis();
+  Ok ok = null;
 }
