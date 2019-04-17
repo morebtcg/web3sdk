@@ -40,11 +40,22 @@
 			</list>
 		</property>
 	</bean>
+	
+	<bean id="pool" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+            <property name="corePoolSize" value="1000" />
+            <property name="maxPoolSize" value="2000" />
+            <property name="queueCapacity" value="4000" />
+            <property name="keepAliveSeconds" value="60" />
+            <property name="rejectedExecutionHandler">
+                    <bean class="java.util.concurrent.ThreadPoolExecutor.AbortPolicy" />
+            </property>
+	</bean>
 
 	<bean id="channelService" class="org.fisco.bcos.channel.client.Service" depends-on="groupChannelConnectionsConfig">
 		<property name="groupId" value="1" />
 		<property name="orgID" value="fisco" />
 		<property name="allChannelConnections" ref="groupChannelConnectionsConfig"></property>
+		<property name="threadPool" ref="pool" />
 	</bean>
 
 </beans>

@@ -131,8 +131,8 @@ public class PerfomanceCollector {
 
         if(to.get() > 0) {
           System.out.println("To balance expect: " + to.get());
-          System.out.println("To balance in contract: " + ok.get().send().intValue());
         }
+        System.out.println("To balance in contract: " + ok.get().send().intValue());
         
         System.exit(0);
       }
